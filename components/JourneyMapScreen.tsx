@@ -4,10 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
-import { vectorModule1 } from "@/data/vectorModule1";
-import { vectorModule2 } from "@/data/vectorModule2";
-import { vectorModule3 } from "@/data/vectorModule3";
-import { vectorModule4 } from "@/data/vectorModule4";
+import { curriculum } from "@/data/curriculum/index";
 import { Metric } from "@/components/Metric";
 import {
   curriculumSections,
@@ -47,41 +44,19 @@ export function JourneyMapScreen({
     curriculumUnits.findIndex((unit) => unit.id === activeUnitId)
   );
 
-  const vectorModule1Complete = completedLessonModuleIds.includes(vectorModule1.id);
-  const vectorModule2Complete = completedLessonModuleIds.includes(vectorModule2.id);
-  const vectorModule3Complete = completedLessonModuleIds.includes(vectorModule3.id);
-  const vectorModule4Complete = completedLessonModuleIds.includes(vectorModule4.id);
+  const mechanicsSection = curriculum[0];
 
-const vectorModules = [
-  {
-    number: 1,
-    title: vectorModule1.title,
-    id: vectorModule1.id,
-    complete: vectorModule1Complete,
-    unlocked: true,
-  },
-  {
-    number: 2,
-    title: vectorModule2.title,
-    id: vectorModule2.id,
-    complete: vectorModule2Complete,
-    unlocked: vectorModule1Complete,
-  },
-  {
-    number: 3,
-    title: vectorModule3.title,
-    id: vectorModule3.id,
-    complete: vectorModule3Complete,
-    unlocked: vectorModule2Complete,
-  },
-  {
-    number: 4,
-    title: vectorModule4.title,
-    id: vectorModule4.id,
-    complete: vectorModule4Complete,
-    unlocked: vectorModule3Complete,
-  },
-];
+  const sectionModules = mechanicsSection.modules.map((module, index) => ({
+    number: index + 1,
+    title: module.title,
+    id: module.id,
+    complete: completedLessonModuleIds.includes(module.id),
+    unlocked:
+      index === 0 ||
+      completedLessonModuleIds.includes(
+        mechanicsSection.modules[index - 1]?.id
+      ),
+  }));
 
   const statusOf = (index: number, unit: CurriculumUnit) => {
     if (unit.problemIds.every((id) => completedProblemIds.includes(id))) {
@@ -136,7 +111,7 @@ const vectorModules = [
           </p>
 
           <div className="mt-5 space-y-3">
-            {vectorModules.map((module) => (
+            {sectionModules.map((module) => (
               <button
                 key={module.id}
                 disabled={!module.unlocked}
@@ -168,13 +143,7 @@ const vectorModules = [
             ))}
 
             <Button onClick={startLesson} className="w-full">
-              {vectorModule3Complete
-                ? "Continue to Module 4 →"
-                : vectorModule2Complete
-                  ? "Continue to Module 3 →"
-                  : vectorModule1Complete
-                    ? "Continue to Module 2 →"
-                    : "Start recommended path →"}
+              Continue learning →
             </Button>
           </div>
         </Card>

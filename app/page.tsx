@@ -10,12 +10,12 @@ import { Card } from "@/components/Card";
 import { Metric } from "@/components/Metric";
 import { AuthScreen } from "@/components/AuthScreen";
 import { ProblemScreen } from "@/components/ProblemScreen";
-import { JourneyMapScreen } from "@/components/JourneyMapScreen";
+import { WorldMapScreen } from "@/components/world-map/WorldMapScreen";
 import { LessonModuleScreen } from "@/components/LessonModuleScreen";
-import { vectorModule1 } from "@/data/vectorModule1";
-import { vectorModule2 } from "@/data/vectorModule2";
-import { vectorModule3 } from "@/data/vectorModule3";
-import { vectorModule4 } from "@/data/vectorModule4";
+import {
+  getModuleById,
+  getNextIncompleteModule,
+} from "@/data/curriculum/helpers";
 
 type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 type Topic = "Forces" | "Energy" | "Momentum" | "Rotation" | "Electricity";
@@ -170,6 +170,7 @@ export default function PhysicsProblemGym() {
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [completedLessonModuleIds, setCompletedLessonModuleIds] = useState<string[]>([]);
+  const [completedLessonProblemIds, setCompletedLessonProblemIds] = useState<string[]>([]);
   const [authError, setAuthError] = useState<string | null>(null);
   const [activeLessonModuleId, setActiveLessonModuleId] = useState<string | null>(null);
   const activeProblem = problems.find((p) => p.id === activeProblemId) ?? problems[0];
@@ -191,11 +192,8 @@ export default function PhysicsProblemGym() {
   }
 
   function getActiveLessonModule() {
-    if (activeLessonModuleId === vectorModule4.id) return vectorModule4;
-    if (activeLessonModuleId === vectorModule3.id) return vectorModule3;
-    if (activeLessonModuleId === vectorModule2.id) return vectorModule2;
-    return vectorModule1;
-  }
+  return getModuleById(activeLessonModuleId);
+}
 
   function resetProblemState(problemId: number) {
     setActiveProblemId(problemId);
@@ -384,6 +382,12 @@ export default function PhysicsProblemGym() {
     setScreen(authUser ? "path" : "landing");
   }
 
+  function markLessonProblemComplete(problemId: string) {
+    setCompletedLessonProblemIds((current) =>
+      current.includes(problemId) ? current : [...current, problemId]
+    );
+  }
+
   function resetAll() {
     setScreen(authUser ? "path" : "landing");
     setOnboardingStep(0);
@@ -489,7 +493,7 @@ return (
       <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.05)_1px,transparent_1px)] bg-[size:54px_54px]" />
     </div>
 
-    <section className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8 md:py-12">
+    <section className="relative flex min-h-screen w-full flex-col px-6 py-8 md:py-12">
       <nav className="mb-10 flex items-center justify-between">
         <button onClick={goHome} className="flex items-center gap-3 text-left">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-yellow-400 text-lg font-black text-red-950">
@@ -650,27 +654,16 @@ return (
       ) : null}
 
       {screen === "path" || screen === "dashboard" ? (
-        <JourneyMapScreen
-          activeUnitId={activeUnitId}
-          startLesson={() => {
-            if (!completedLessonModuleIds.includes(vectorModule1.id)) {
-              openLessonModule(vectorModule1.id);
-            } else if (!completedLessonModuleIds.includes(vectorModule2.id)) {
-              openLessonModule(vectorModule2.id);
-            } else if (!completedLessonModuleIds.includes(vectorModule3.id)) {
-              openLessonModule(vectorModule3.id);
-            } else {
-              openLessonModule(vectorModule4.id);
-            }
-          }}
+       <WorldMapScreen
           completedProblemIds={completedProblemIds}
-          startUnit={startUnit}
-          startRecommendedProblem={startRecommendedProblem}
-          recommendedPath={recommendedPath}
-          firstRecommendedProblem={firstRecommendedProblem}
-          lastSavedAt={lastSavedAt}
-          openLessonModule={openLessonModule}
           completedLessonModuleIds={completedLessonModuleIds}
+          completedLessonProblemIds={completedLessonProblemIds}
+          startLesson={() => {
+            const nextModule = getNextIncompleteModule(completedLessonModuleIds);
+            openLessonModule(nextModule.id);
+          }}
+          openLessonModule={openLessonModule}
+          lastSavedAt={lastSavedAt}
         />
       ) : null}
 
@@ -678,6 +671,7 @@ return (
         <LessonModuleScreen
           module={getActiveLessonModule()}
           onExit={() => setScreen("dashboard")}
+          onProblemComplete={markLessonProblemComplete}
           onComplete={async () => {
             const activeModule = getActiveLessonModule();
 

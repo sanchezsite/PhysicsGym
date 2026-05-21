@@ -212,10 +212,12 @@ function renderProblemBody({
 export function LessonModuleScreen({
   module,
   onExit,
+  onProblemComplete,
   onComplete,
 }: {
   module: LessonModule;
   onExit: () => void;
+  onProblemComplete: (problemId: string) => void;
   onComplete: () => void | Promise<void>;
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -237,6 +239,10 @@ export function LessonModuleScreen({
       sortAnswers,
       selectedVisualChoiceId
     );
+
+    if (correct) {
+      onProblemComplete(problem.id);
+    }
 
     setWasCorrect(correct);
     setShowExplanation(true);
