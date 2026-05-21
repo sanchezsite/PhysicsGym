@@ -4,27 +4,24 @@ import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { problems } from "@/data/problems";
-import { curriculumSections, curriculumUnits, learningPathSequences } from "@/data/curriculum";
+import { learningPathSequences } from "@/data/curriculum";
+import {
+  getLessonModuleById,
+  getNextLessonModule,
+} from "@/data/curriculum/index";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Metric } from "@/components/Metric";
 import { AuthScreen } from "@/components/AuthScreen";
 import { ProblemScreen } from "@/components/ProblemScreen";
-import { JourneyMapScreen } from "@/components/JourneyMapScreen";
+import { WorldMapScreen } from "@/components/world-map/WorldMapScreen";
 import { LessonModuleScreen } from "@/components/LessonModuleScreen";
-import { vectorModule1 } from "@/data/vectorModule1";
-import { vectorModule2 } from "@/data/vectorModule2";
-import { vectorModule3 } from "@/data/vectorModule3";
-import { vectorModule4 } from "@/data/vectorModule4";
 
-type Difficulty = "Beginner" | "Intermediate" | "Advanced";
-type Topic = "Forces" | "Energy" | "Momentum" | "Rotation" | "Electricity";
 type Screen = "landing" | "auth" | "dashboard" | "onboarding" | "path" | "problem" | "complete" | "lesson";
 type Level = "new" | "highschool" | "college" | "intermediate" | "advanced" | "quantum";
 type Struggle = "translation" | "principles" | "math" | "multistep" | "visualization" | "unsure";
 type Challenge = "gentle" | "medium" | "hard";
 type FeedbackState = "idle" | "correct" | "incorrect";
-type DiagramType = "elevator" | "two-blocks" | "loop" | "rolling" | "capacitor";
 type AuthMode = "signin" | "signup";
 
 type AuthUser = { id: string; email: string };
@@ -37,27 +34,9 @@ type SavedProfile = {
   current_problem_index: number | null;
   updated_at?: string | null;
 };
-type Problem = {
-  id: number;
-  title: string;
-  topic: Topic;
-  difficulty: Difficulty;
-  time: string;
-  pattern: string;
-  prompt: string;
-  diagram?: DiagramType;
-  choices: string[];
-  correctChoiceIndex: number;
-  correctFeedback: string;
-  conceptualHint: string;
-  solution: string[];
-  finalAnswer: string;
-};
 type UserProfile = { level: Level | null; struggle: Struggle | null; challenge: Challenge | null };
 type Option<T extends string> = { value: T; label: string; description: string };
 type LearningPath = { title: string; subtitle: string; problemIds: number[]; mission: string[] };
-type CurriculumUnit = { id: string; title: string; subtitle: string; section: string; problemIds: number[] };
-type CurriculumSection = { id: string; title: string; description: string; units: CurriculumUnit[] };
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -92,11 +71,6 @@ const challengeOptions: Option<Challenge>[] = [
   { value: "hard", label: "Push me hard", description: "Less scaffolding, tougher prompts." },
 ];
 
-const difficultyStyles: Record<Difficulty, string> = {
-  Beginner: "border-yellow-400/40 bg-yellow-400/10 text-yellow-200",
-  Intermediate: "border-amber-400/40 bg-amber-400/10 text-amber-200",
-  Advanced: "border-orange-400/40 bg-orange-400/10 text-orange-200",
-};
 const appDataIsValid = problems.every((p) => p.choices.length === 4 && p.correctChoiceIndex >= 0 && p.correctChoiceIndex < 4 && p.solution.length > 0) && Object.values(learningPathSequences).every((path) => path.every((id) => problems.some((p) => p.id === id)));
 
 function ProgressDots({ step }: { step: number }) {
@@ -181,7 +155,6 @@ export default function PhysicsProblemGym() {
     if (level === "college") return { title: struggle === "principles" ? "Principle Recognition Path" : "Intro College Mechanics Path", subtitle: "Choose the right law before algebra.", problemIds: [...learningPathSequences.college], mission: ["Free-body diagrams", "Energy constraints", "Momentum as a vector"] };
     return { title: struggle === "visualization" ? "Physics Intuition Starter" : "Newtonian Foundations", subtitle: "Begin with force, motion, and physical meaning.", problemIds: [...learningPathSequences.beginner], mission: ["What forces exist?", "What does a scale measure?", "What does acceleration change?"] };
   }, [profile]);
-  const firstRecommendedProblem = problems.find((p) => p.id === recommendedPath.problemIds[0]) ?? problems[0];
   const accuracy = totalChecks === 0 ? 0 : Math.round((solvedCount / totalChecks) * 100);
   const canContinue = onboardingStep === 0 ? profile.level !== null : onboardingStep === 1 ? profile.struggle !== null : profile.challenge !== null;
 
@@ -191,10 +164,7 @@ export default function PhysicsProblemGym() {
   }
 
   function getActiveLessonModule() {
-    if (activeLessonModuleId === vectorModule4.id) return vectorModule4;
-    if (activeLessonModuleId === vectorModule3.id) return vectorModule3;
-    if (activeLessonModuleId === vectorModule2.id) return vectorModule2;
-    return vectorModule1;
+    return getLessonModuleById(activeLessonModuleId);
   }
 
   function resetProblemState(problemId: number) {
@@ -256,11 +226,6 @@ export default function PhysicsProblemGym() {
     void saveProgressSnapshot({ pathIds, unitId, problemIndex: safeIndex });
   }
 
-  function startUnit(unit: CurriculumUnit) {
-    beginPath(unit.problemIds, unit.id);
-    setScreen("problem");
-  }
-
   function goToNextProblem() {
     const nextIndex = currentPathIndex + 1;
     if (nextIndex >= currentPathIds.length) {
@@ -306,6 +271,22 @@ export default function PhysicsProblemGym() {
     setAuthMode(mode);
     setAuthError(null);
     setScreen("auth");
+  }
+
+  async function loadCompletedLessons(userId: string) {
+    if (!supabase) return;
+
+    const { data, error } = await supabase
+      .from("lesson_progress")
+      .select("module_id")
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Failed to load lesson progress:", error.message);
+      return;
+    }
+
+    setCompletedLessonModuleIds(data?.map((row) => row.module_id) ?? []);
   }
 
   async function handleAuthSubmit() {
@@ -368,11 +349,6 @@ export default function PhysicsProblemGym() {
     beginPath(recommendedPath.problemIds);
     void saveProgressSnapshot({ pathIds: recommendedPath.problemIds, problemIndex: 0, level: profile.level, struggle: profile.struggle, challenge: profile.challenge });
     setScreen("path");
-  }
-
-  function startRecommendedProblem() {
-    beginPath(recommendedPath.problemIds, activeUnitId);
-    setScreen("problem");
   }
 
   function continueTraining() {
@@ -462,22 +438,6 @@ export default function PhysicsProblemGym() {
   if (error) {
     console.error("Failed to save lesson progress:", error.message);
   }
-}
-
-async function loadCompletedLessons(userId: string) {
-  if (!supabase) return;
-
-  const { data, error } = await supabase
-    .from("lesson_progress")
-    .select("module_id")
-    .eq("user_id", userId);
-
-  if (error) {
-    console.error("Failed to load lesson progress:", error.message);
-    return;
-  }
-
-  setCompletedLessonModuleIds(data?.map((row) => row.module_id) ?? []);
 }
 
 return (
@@ -650,24 +610,13 @@ return (
       ) : null}
 
       {screen === "path" || screen === "dashboard" ? (
-        <JourneyMapScreen
-          activeUnitId={activeUnitId}
+        <WorldMapScreen
           startLesson={() => {
-            if (!completedLessonModuleIds.includes(vectorModule1.id)) {
-              openLessonModule(vectorModule1.id);
-            } else if (!completedLessonModuleIds.includes(vectorModule2.id)) {
-              openLessonModule(vectorModule2.id);
-            } else if (!completedLessonModuleIds.includes(vectorModule3.id)) {
-              openLessonModule(vectorModule3.id);
-            } else {
-              openLessonModule(vectorModule4.id);
-            }
+            openLessonModule(
+              getNextLessonModule(completedLessonModuleIds).id
+            );
           }}
           completedProblemIds={completedProblemIds}
-          startUnit={startUnit}
-          startRecommendedProblem={startRecommendedProblem}
-          recommendedPath={recommendedPath}
-          firstRecommendedProblem={firstRecommendedProblem}
           lastSavedAt={lastSavedAt}
           openLessonModule={openLessonModule}
           completedLessonModuleIds={completedLessonModuleIds}

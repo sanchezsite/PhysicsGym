@@ -13,6 +13,8 @@ export type CurriculumSection = {
   modules: LessonModule[];
 };
 
+export type ModuleStatus = "completed" | "current" | "available" | "locked";
+
 export type UserProgress = {
   completedModuleIds: string[];
   completedProblemIds: number[];
