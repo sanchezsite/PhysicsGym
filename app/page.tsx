@@ -340,6 +340,7 @@ export default function PhysicsProblemGym() {
     setScreen(authMode === "signup" ? "onboarding" : "path");
     void loadProgress(nextUser.id);
     void loadCompletedLessons(nextUser.id); 
+    void loadCompletedLessonProblems(nextUser.id);
   }
 
   async function signOut() {
@@ -350,6 +351,7 @@ export default function PhysicsProblemGym() {
     setTotalChecks(0);
     setCompletedProblemIds([]);
     setCompletedLessonModuleIds([]);
+    setCompletedLessonProblemIds([]);
     setScreen("landing");
   }
 
@@ -382,10 +384,29 @@ export default function PhysicsProblemGym() {
     setScreen(authUser ? "path" : "landing");
   }
 
-  function markLessonProblemComplete(problemId: string) {
+  async function markLessonProblemComplete(problemId: string) {
     setCompletedLessonProblemIds((current) =>
       current.includes(problemId) ? current : [...current, problemId]
     );
+
+    if (!supabase || !authUser) return;
+
+    const { error } = await supabase
+      .from("lesson_problem_progress")
+      .upsert(
+        {
+          user_id: authUser.id,
+          problem_id: problemId,
+          completed_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "user_id,problem_id",
+        }
+      );
+
+    if (error) {
+      console.error("Failed to save lesson problem progress:", error.message);
+    }
   }
 
   function resetAll() {
@@ -423,6 +444,7 @@ export default function PhysicsProblemGym() {
       setScreen("path");
       void loadProgress(nextUser.id);
       void loadCompletedLessons(nextUser.id);
+      void loadCompletedLessonProblems(nextUser.id);
     }
     void loadSession();
     if (!supabase) return () => { mounted = false; };
@@ -436,6 +458,7 @@ export default function PhysicsProblemGym() {
       setAuthEmail(nextUser.email);
       void loadProgress(nextUser.id);
       void loadCompletedLessons(nextUser.id);
+      void loadCompletedLessonProblems(nextUser.id);
     });
     return () => {
       mounted = false;
@@ -484,8 +507,24 @@ async function loadCompletedLessons(userId: string) {
   setCompletedLessonModuleIds(data?.map((row) => row.module_id) ?? []);
 }
 
+async function loadCompletedLessonProblems(userId: string) {
+  if (!supabase) return;
+
+  const { data, error } = await supabase
+    .from("lesson_problem_progress")
+    .select("problem_id")
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Failed to load lesson problem progress:", error.message);
+    return;
+  }
+
+  setCompletedLessonProblemIds(data?.map((row) => row.problem_id) ?? []);
+}
+
 return (
-  <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(250,204,21,0.20),transparent_28%),linear-gradient(to_bottom,#450a0a,#7f1d1d,#020617)] text-yellow-50">
+  <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_76%_14%,rgba(56,189,248,0.22),transparent_26%),radial-gradient(circle_at_22%_8%,rgba(250,204,21,0.14),transparent_24%),radial-gradient(circle_at_50%_95%,rgba(99,102,241,0.16),transparent_30%),linear-gradient(180deg,#1e3a8a,#0f172a_58%,#020617)] text-white">
     <div className="pointer-events-none fixed inset-0 opacity-30">
       <div className="absolute left-10 top-24 text-7xl text-yellow-300/20">∇</div>
       <div className="absolute right-16 top-40 text-8xl text-yellow-300/10">Σ</div>
@@ -493,43 +532,56 @@ return (
       <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.05)_1px,transparent_1px)] bg-[size:54px_54px]" />
     </div>
 
-    <section className="relative flex min-h-screen w-full flex-col px-6 py-8 md:py-12">
-      <nav className="mb-10 flex items-center justify-between">
-        <button onClick={goHome} className="flex items-center gap-3 text-left">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-yellow-400 text-lg font-black text-red-950">
-            Ψ
+    <section className="relative flex min-h-screen w-full flex-col">
+      <nav className="relative z-50 px-6 pt-6">
+        <div className="flex items-center justify-between rounded-3xl border border-white/10 bg-white/[0.06] px-5 py-3 text-white shadow-2xl shadow-black/20 backdrop-blur-md">
+          <button onClick={goHome} className="flex items-center gap-3 text-left">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-300 text-lg font-black text-slate-950 shadow-lg shadow-cyan-950/20">
+              Ψ
+            </div>
+
+            <div>
+              <p className="text-lg font-black tracking-tight text-white">
+                Physics Gym
+              </p>
+              <p className="text-sm text-slate-300/70">
+                A guided path into problem solving.
+              </p>
+            </div>
+          </button>
+
+          <div className="flex items-center gap-3">
+            {authUser ? (
+              <span className="hidden rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-300/75 md:inline">
+                {authUser.email}
+              </span>
+            ) : null}
+
+            {screen !== "landing" ? (
+              <button
+                onClick={resetAll}
+                className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-bold text-slate-200 transition hover:border-cyan-200/30 hover:bg-white/[0.08]"
+              >
+                Start over
+              </button>
+            ) : null}
+
+            {authUser ? (
+              <button
+                onClick={signOut}
+                className="rounded-2xl border border-cyan-200/25 bg-cyan-300/10 px-4 py-2 text-sm font-bold text-cyan-50 transition hover:border-cyan-200/45 hover:bg-cyan-300/15"
+              >
+                Sign out
+              </button>
+            ) : (
+              <button
+                onClick={() => openAuth("signin")}
+                className="rounded-2xl border border-cyan-200/25 bg-cyan-300/10 px-4 py-2 text-sm font-bold text-cyan-50 transition hover:border-cyan-200/45 hover:bg-cyan-300/15"
+              >
+                Log in
+              </button>
+            )}
           </div>
-
-          <div>
-            <p className="text-lg font-semibold tracking-tight">Physics Gym</p>
-            <p className="text-sm text-yellow-200/70">
-              A guided path into problem solving.
-            </p>
-          </div>
-        </button>
-
-        <div className="flex items-center gap-3">
-          {authUser ? (
-            <span className="hidden text-sm text-yellow-100/60 md:inline">
-              {authUser.email}
-            </span>
-          ) : null}
-
-          {screen !== "landing" ? (
-            <Button variant="ghost" onClick={resetAll}>
-              Start over
-            </Button>
-          ) : null}
-
-          {authUser ? (
-            <Button variant="outline" onClick={signOut}>
-              Sign out
-            </Button>
-          ) : (
-            <Button variant="outline" onClick={() => openAuth("signin")}>
-              Log in
-            </Button>
-          )}
         </div>
       </nav>
 

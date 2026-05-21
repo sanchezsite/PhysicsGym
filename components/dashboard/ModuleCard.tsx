@@ -17,6 +17,7 @@ export function ModuleCard({
   complete: boolean;
   unlocked: boolean;
   current: boolean;
+  completedProblemCount: number;
   onOpen: () => void;
 }) {
   const totalProblems = module.problems.length;
@@ -26,19 +27,29 @@ export function ModuleCard({
     <button
       disabled={!unlocked}
       onClick={onOpen}
-      className={`w-full rounded-3xl border p-5 text-left transition ${
+      className={`group w-full rounded-3xl border p-5 text-left transition ${
         complete
-          ? "border-yellow-300/55 bg-yellow-400/10 text-yellow-50 shadow-xl shadow-yellow-950/20"
+          ? "border-cyan-300/35 bg-cyan-300/10 text-cyan-50 shadow-xl shadow-cyan-950/15"
           : current
-            ? "border-yellow-300 bg-yellow-400/15 text-yellow-50 shadow-2xl shadow-yellow-500/15"
+             ? "border-cyan-200/60 bg-cyan-200/10 text-cyan-50 shadow-2xl shadow-cyan-400/20 ring-2 ring-cyan-300/35 hover:shadow-cyan-300/35 hover:scale-[1.015]"
             : unlocked
-              ? "border-yellow-300/25 bg-black/25 text-yellow-100 hover:border-yellow-300/55 hover:bg-yellow-400/10"
-              : "cursor-not-allowed border-yellow-100/10 bg-black/20 text-yellow-100/30"
+              ? "border-white/10 bg-white/[0.05] text-slate-100 hover:border-cyan-200/30 hover:bg-white/[0.08]"
+              : "cursor-not-allowed border-white/10 bg-white/[0.025] text-slate-500"
       }`}
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-yellow-300/60">
+          <p
+            className={`text-xs font-black uppercase tracking-[0.18em] ${
+              complete
+                ? "text-cyan-100/55"
+                : current
+                  ? "text-yellow-100/65"
+                  : unlocked
+                    ? "text-cyan-100/45"
+                    : "text-slate-500"
+            }`}
+          >
             Module {number}
           </p>
 
@@ -46,21 +57,43 @@ export function ModuleCard({
             {module.title}
           </h3>
 
-          <p className="mt-2 text-sm leading-6 opacity-70">
+          <p className="mt-2 text-sm leading-6 opacity-65">
             {module.description}
           </p>
         </div>
 
-        <span className="text-2xl">
+        <span
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-lg font-black ${
+            complete
+              ? "bg-cyan-300 text-slate-950"
+              : current
+                ? "bg-cyan-300 text-slate-950 shadow-[0_0_25px_rgba(103,232,249,0.55)] animate-pulse scale-110"
+                : unlocked
+                  ? "bg-white/10 text-slate-200"
+                  : "bg-white/[0.04] text-slate-500"
+          }`}
+        >
           {complete ? "✓" : unlocked ? "▶" : "🔒"}
         </span>
       </div>
 
-      <ProblemDots
-        total={totalProblems}
-        completed={completedProblems}
-        locked={!unlocked}
-      />
+      <div className="mt-5">
+        <ProblemDots
+          total={totalProblems}
+          completed={completedProblems}
+          locked={!unlocked}
+        />
+      </div>
+
+      <div className="mt-4 flex items-center justify-between text-xs font-bold uppercase tracking-[0.16em] opacity-50">
+        <span>
+          {completedProblems}/{totalProblems} problems
+        </span>
+
+        <span>
+          {complete ? "Complete" : current ? "Current" : unlocked ? "Unlocked" : "Locked"}
+        </span>
+      </div>
     </button>
   );
 }

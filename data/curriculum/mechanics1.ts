@@ -3,6 +3,7 @@ import { vectorModule1 } from "@/data/vectorModule1";
 import { vectorModule2 } from "@/data/vectorModule2";
 import { vectorModule3 } from "@/data/vectorModule3";
 import { vectorModule4 } from "@/data/vectorModule4";
+import { vectorModule5 } from "@/data/vectorModule5";
 
 export const mechanics1: CurriculumSection = {
   id: "mechanics-1",
@@ -20,5 +21,6 @@ export const mechanics1: CurriculumSection = {
     vectorModule2,
     vectorModule3,
     vectorModule4,
+    vectorModule5,
   ],
 };

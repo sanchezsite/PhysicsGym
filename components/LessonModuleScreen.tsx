@@ -228,7 +228,7 @@ export function LessonModuleScreen({
     useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [wasCorrect, setWasCorrect] = useState<boolean | null>(null);
-
+  const [xpEarned, setXpEarned] = useState(0);
   const problem = module.problems[currentIndex];
 
   function submitAnswer() {
@@ -242,6 +242,9 @@ export function LessonModuleScreen({
 
     if (correct) {
       onProblemComplete(problem.id);
+      setXpEarned(10);
+    } else {
+      setXpEarned(0);
     }
 
     setWasCorrect(correct);
@@ -332,15 +335,26 @@ export function LessonModuleScreen({
             <div
               className={`mt-8 rounded-2xl border p-5 ${
                 wasCorrect
-                  ? "border-yellow-300/40 bg-yellow-400/10"
+                  ? "border-cyan-300/35 bg-cyan-300/10"
                   : "border-amber-300/40 bg-amber-400/10"
               }`}
             >
-              <p className="mb-2 text-sm font-bold uppercase tracking-[0.18em] text-yellow-300/70">
+              <p
+                className={`mb-2 text-sm font-bold uppercase tracking-[0.18em] ${
+                  wasCorrect ? "text-cyan-100/70" : "text-amber-100/70"
+                }`}
+              >
                 {wasCorrect ? "Correct" : "Not quite"}
               </p>
 
               <p className="text-yellow-100">{problem.explanation}</p>
+
+              {wasCorrect ? (
+                <div className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-cyan-200/20 bg-cyan-300/10 px-4 py-2 text-sm font-black text-cyan-100 shadow-lg shadow-cyan-950/20">
+                  <span>✨</span>
+                  <span>+{xpEarned} XP</span>
+                </div>
+              ) : null}
 
               {!wasCorrect && problem.hint ? (
                 <p className="mt-4 text-yellow-100/70">

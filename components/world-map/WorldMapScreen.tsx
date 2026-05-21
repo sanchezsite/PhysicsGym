@@ -15,6 +15,7 @@ export function WorldMapScreen({
 }: {
   completedProblemIds: number[];
   completedLessonModuleIds: string[];
+  completedLessonProblemIds: string[];
   startLesson: () => void;
   openLessonModule: (moduleId: string) => void;
 }) {
@@ -29,7 +30,12 @@ export function WorldMapScreen({
     curriculum[0];
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-[radial-gradient(circle_at_20%_10%,rgba(250,204,21,0.12),transparent_28%),linear-gradient(180deg,#450a0a,#020617)]">
+  <div className="relative flex min-h-screen w-full overflow-hidden">
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_14%,rgba(56,189,248,0.22),transparent_26%),radial-gradient(circle_at_22%_8%,rgba(250,204,21,0.14),transparent_24%),radial-gradient(circle_at_50%_95%,rgba(99,102,241,0.16),transparent_30%),linear-gradient(180deg,#1e3a8a,#0f172a_58%,#020617)]" />
+
+    <div className="pointer-events-none absolute inset-0 opacity-25 [background-image:radial-gradient(rgba(254,240,138,0.55)_1px,transparent_1px)] [background-size:42px_42px]" />
+
+    <div className="relative z-10 flex min-h-screen w-full">
       <SectionSidebar
         sections={curriculum}
         selectedSectionId={selectedSectionId}
@@ -47,5 +53,6 @@ export function WorldMapScreen({
         onOpenModule={openLessonModule}
       />
     </div>
-  );
+  </div>
+);
 }
