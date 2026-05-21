@@ -6,11 +6,7 @@ import { Card } from "@/components/Card";
 import { MultipleChoice } from "@/components/lesson-interactions/MultipleChoice";
 import { PairInput } from "@/components/lesson-interactions/PairInput";
 import { SortInteraction } from "@/components/lesson-interactions/SortInteraction";
-import type {
-  LessonModule,
-  LessonProblem,
-  VisualChoice,
-} from "@/types";
+import type { LessonModule, LessonProblem, VisualChoice } from "@/types";
 
 type SortAnswers = Record<string, string>;
 
@@ -21,10 +17,7 @@ function isCorrectAnswer(
   sortAnswers: SortAnswers,
   selectedVisualChoiceId: string | null
 ) {
-  if (
-    problem.type === "numeric_pair" ||
-    problem.type === "boss_multi_part"
-  ) {
+  if (problem.type === "numeric_pair" || problem.type === "boss_multi_part") {
     if (!Array.isArray(problem.correctAnswer)) return false;
 
     return problem.correctAnswer.every((answer, index) => {
@@ -48,7 +41,7 @@ function isCorrectAnswer(
 }
 
 function ArrowDiagram({ choice }: { choice: VisualChoice }) {
-  const length = choice.magnitude === 4 ? 120 : 70;
+  const length = choice.magnitude === 4 ? 120 : choice.magnitude === 0 ? 0 : 70;
 
   const directions = {
     east: {
@@ -56,7 +49,7 @@ function ArrowDiagram({ choice }: { choice: VisualChoice }) {
       y1: 75,
       x2: 35 + length,
       y2: 75,
-      labelX: 35 + length / 2,
+      labelX: 35 + Math.max(length, 40) / 2,
       labelY: 55,
     },
     west: {
@@ -64,7 +57,7 @@ function ArrowDiagram({ choice }: { choice: VisualChoice }) {
       y1: 75,
       x2: 165 - length,
       y2: 75,
-      labelX: 165 - length / 2,
+      labelX: 165 - Math.max(length, 40) / 2,
       labelY: 55,
     },
     north: {
@@ -73,7 +66,7 @@ function ArrowDiagram({ choice }: { choice: VisualChoice }) {
       x2: 100,
       y2: 135 - length,
       labelX: 125,
-      labelY: 135 - length / 2,
+      labelY: 135 - Math.max(length, 40) / 2,
     },
     south: {
       x1: 100,
@@ -81,7 +74,7 @@ function ArrowDiagram({ choice }: { choice: VisualChoice }) {
       x2: 100,
       y2: 25 + length,
       labelX: 125,
-      labelY: 25 + length / 2,
+      labelY: 25 + Math.max(length, 40) / 2,
     },
   };
 
@@ -99,26 +92,37 @@ function ArrowDiagram({ choice }: { choice: VisualChoice }) {
           orient="auto"
           markerUnits="strokeWidth"
         >
-          <path d="M0,0 L0,6 L9,3 z" fill="rgb(253 224 71)" />
+          <path d="M0,0 L0,6 L9,3 z" fill="rgb(103 232 249)" />
         </marker>
       </defs>
 
-      <line
-        x1={d.x1}
-        y1={d.y1}
-        x2={d.x2}
-        y2={d.y2}
-        stroke="rgb(253 224 71)"
-        strokeWidth="6"
-        strokeLinecap="round"
-        markerEnd={`url(#arrowhead-${choice.id})`}
-      />
+      {choice.magnitude === 0 ? (
+        <circle
+          cx="100"
+          cy="75"
+          r="10"
+          fill="none"
+          stroke="rgb(103 232 249)"
+          strokeWidth="5"
+        />
+      ) : (
+        <line
+          x1={d.x1}
+          y1={d.y1}
+          x2={d.x2}
+          y2={d.y2}
+          stroke="rgb(103 232 249)"
+          strokeWidth="6"
+          strokeLinecap="round"
+          markerEnd={`url(#arrowhead-${choice.id})`}
+        />
+      )}
 
       <text
         x={d.labelX}
         y={d.labelY}
         textAnchor="middle"
-        fill="rgb(254 240 138)"
+        fill="rgb(224 242 254)"
         fontSize="16"
         fontWeight="800"
       >
@@ -151,40 +155,41 @@ function renderProblemBody({
 }) {
   switch (problem.type) {
     case "multiple_choice":
-        return (
-            <MultipleChoice
-            choices={problem.choices ?? []}
-            selected={selected}
-            setSelected={setSelected}
-            />
-        );
+      return (
+        <MultipleChoice
+          choices={problem.choices ?? []}
+          selected={selected}
+          setSelected={setSelected}
+        />
+      );
 
     case "sort":
-        return (
-            <SortInteraction
-            sortItems={problem.sortItems ?? []}
-            sortBuckets={problem.sortBuckets ?? []}
-            sortAnswers={sortAnswers}
-            setSortAnswers={setSortAnswers}
-            />
-        );
+      return (
+        <SortInteraction
+          sortItems={problem.sortItems ?? []}
+          sortBuckets={problem.sortBuckets ?? []}
+          sortAnswers={sortAnswers}
+          setSortAnswers={setSortAnswers}
+        />
+      );
 
-   case "numeric_pair":
+    case "numeric_pair":
     case "boss_multi_part":
-    return (
+      return (
         <PairInput
-        labels={[
+          labels={[
             problem.pairLabels?.[0] ?? "Distance",
             problem.pairLabels?.[1] ?? "Displacement",
-        ]}
-        placeholders={[
+          ]}
+          placeholders={[
             problem.pairPlaceholders?.[0] ?? "Example: 6 meters",
             problem.pairPlaceholders?.[1] ?? "Example: 0 meters",
-        ]}
-        pairAnswers={pairAnswers}
-        setPairAnswers={setPairAnswers}
+          ]}
+          pairAnswers={pairAnswers}
+          setPairAnswers={setPairAnswers}
         />
-    );
+      );
+
     case "visual_choice":
       return (
         <div className="grid gap-4 md:grid-cols-2">
@@ -194,8 +199,8 @@ function renderProblemBody({
               onClick={() => setSelectedVisualChoiceId(choice.id)}
               className={`rounded-3xl border p-4 transition ${
                 selectedVisualChoiceId === choice.id
-                  ? "border-yellow-300 bg-yellow-400/10"
-                  : "border-yellow-300/20 bg-black/20 hover:border-yellow-300/50"
+                  ? "border-cyan-300/70 bg-cyan-300/10 shadow-xl shadow-cyan-950/20"
+                  : "border-white/10 bg-white/[0.04] hover:border-cyan-200/30 hover:bg-white/[0.08]"
               }`}
             >
               <ArrowDiagram choice={choice} />
@@ -229,6 +234,7 @@ export function LessonModuleScreen({
   const [showExplanation, setShowExplanation] = useState(false);
   const [wasCorrect, setWasCorrect] = useState<boolean | null>(null);
   const [xpEarned, setXpEarned] = useState(0);
+
   const problem = module.problems[currentIndex];
 
   function submitAnswer() {
@@ -260,39 +266,37 @@ export function LessonModuleScreen({
       setSelectedVisualChoiceId(null);
       setShowExplanation(false);
       setWasCorrect(null);
+      setXpEarned(0);
     } else {
-        void onComplete();
+      void onComplete();
     }
   }
 
   const canSubmit =
-    problem.type === "numeric_pair" ||
-    problem.type === "boss_multi_part"
+    problem.type === "numeric_pair" || problem.type === "boss_multi_part"
       ? pairAnswers[0]?.trim().length > 0 && pairAnswers[1]?.trim().length > 0
       : problem.type === "multiple_choice"
         ? selected !== null
         : problem.type === "sort"
-          ? Boolean(
-              problem.sortItems?.every((item) => sortAnswers[item.label])
-            )
+          ? Boolean(problem.sortItems?.every((item) => sortAnswers[item.label]))
           : problem.type === "visual_choice"
             ? selectedVisualChoiceId !== null
             : true;
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 py-10">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 px-6 py-10 text-white">
       <div className="w-full space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-6">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-yellow-300/70">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-cyan-200/65">
               Lesson Module
             </p>
 
-            <h1 className="mt-2 text-5xl font-black text-yellow-100">
+            <h1 className="mt-2 text-5xl font-black tracking-tight text-white">
               {module.title}
             </h1>
 
-            <p className="mt-3 text-lg text-yellow-100/70">
+            <p className="mt-3 text-lg text-slate-300/75">
               {module.description}
             </p>
           </div>
@@ -302,20 +306,20 @@ export function LessonModuleScreen({
           </Button>
         </div>
 
-        <Card className="rounded-3xl border-yellow-300/35 p-8">
+        <Card className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-8 shadow-2xl shadow-black/25 backdrop-blur-md">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.18em] text-yellow-300/60">
+              <p className="text-sm uppercase tracking-[0.18em] text-cyan-100/50">
                 Problem {currentIndex + 1} of {module.problems.length}
               </p>
 
-              <h2 className="mt-2 text-2xl font-bold text-yellow-100">
+              <h2 className="mt-2 text-2xl font-bold text-white">
                 {problem.title}
               </h2>
             </div>
           </div>
 
-          <p className="mb-8 text-lg leading-8 text-yellow-100/80">
+          <p className="mb-8 text-lg leading-8 text-slate-200/80">
             {problem.prompt}
           </p>
 
@@ -347,7 +351,7 @@ export function LessonModuleScreen({
                 {wasCorrect ? "Correct" : "Not quite"}
               </p>
 
-              <p className="text-yellow-100">{problem.explanation}</p>
+              <p className="text-slate-100">{problem.explanation}</p>
 
               {wasCorrect ? (
                 <div className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-cyan-200/20 bg-cyan-300/10 px-4 py-2 text-sm font-black text-cyan-100 shadow-lg shadow-cyan-950/20">
@@ -357,7 +361,7 @@ export function LessonModuleScreen({
               ) : null}
 
               {!wasCorrect && problem.hint ? (
-                <p className="mt-4 text-yellow-100/70">
+                <p className="mt-4 text-slate-300/75">
                   Hint: {problem.hint}
                 </p>
               ) : null}

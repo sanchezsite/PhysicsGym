@@ -17,8 +17,8 @@ export function MultipleChoice({
           onClick={() => setSelected(choice)}
           className={`w-full rounded-2xl border p-4 text-left transition ${
             selected === choice
-              ? "border-yellow-300 bg-yellow-400/10 text-yellow-100"
-              : "border-yellow-300/20 bg-black/20 text-yellow-100/80 hover:border-yellow-300/50"
+              ? "border-cyan-300/70 bg-cyan-300/10 text-cyan-50 shadow-lg shadow-cyan-950/20"
+              : "border-white/10 bg-white/[0.04] text-slate-200/80 hover:border-cyan-200/30 hover:bg-white/[0.08] hover:text-white"
           }`}
         >
           {choice}
