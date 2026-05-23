@@ -216,11 +216,13 @@ function renderProblemBody({
 
 export function LessonModuleScreen({
   module,
+  completedLessonProblemIds,
   onExit,
   onProblemComplete,
   onComplete,
 }: {
   module: LessonModule;
+  completedLessonProblemIds: string[];
   onExit: () => void;
   onProblemComplete: (problemId: string) => void;
   onComplete: () => void | Promise<void>;
@@ -246,7 +248,9 @@ export function LessonModuleScreen({
       selectedVisualChoiceId
     );
 
-    if (correct) {
+    const alreadyCompleted = completedLessonProblemIds.includes(problem.id);
+
+    if (correct && !alreadyCompleted) {
       onProblemComplete(problem.id);
       setXpEarned(10);
     } else {
@@ -353,7 +357,7 @@ export function LessonModuleScreen({
 
               <p className="text-slate-100">{problem.explanation}</p>
 
-              {wasCorrect ? (
+              {wasCorrect && xpEarned > 0 ? (
                 <div className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-cyan-200/20 bg-cyan-300/10 px-4 py-2 text-sm font-black text-cyan-100 shadow-lg shadow-cyan-950/20">
                   <span>✨</span>
                   <span>+{xpEarned} XP</span>

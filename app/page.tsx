@@ -722,6 +722,7 @@ return (
       {screen === "lesson" ? (
         <LessonModuleScreen
           module={getActiveLessonModule()}
+          completedLessonProblemIds={completedLessonProblemIds}
           onExit={() => setScreen("dashboard")}
           onProblemComplete={markLessonProblemComplete}
           onComplete={async () => {
