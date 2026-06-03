@@ -28,20 +28,67 @@ export function SectionSidebar({
   setSelectedSectionId: (sectionId: string) => void;
   completedModuleIds: string[];
 }) {
+  const selectedSection =
+    sections.find((section) => section.id === selectedSectionId) ?? sections[0];
+
+  const selectedSectionModules =
+    selectedSection?.units.flatMap((unit) => unit.modules) ?? [];
+
+  const selectedCompletedCount = selectedSectionModules.filter((module) =>
+    completedModuleIds.includes(module.id)
+  ).length;
+
+  const selectedTotalCount = selectedSectionModules.length;
+
+  const selectedProgress =
+    selectedTotalCount > 0
+      ? Math.round((selectedCompletedCount / selectedTotalCount) * 100)
+      : 0;
+
+  const selectedVisual = getSectionVisual(selectedSection?.id ?? "");
+
   return (
     <aside className="w-80 shrink-0 p-4 text-white">
-      <div className="mb-5 rounded-3xl border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-black/25 backdrop-blur-md">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-200/65">
-          Physics Gym
-        </p>
+      <div
+        className={`mb-5 rounded-3xl border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-black/25 backdrop-blur-md ${selectedVisual.glow}`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-cyan-200/35 bg-cyan-300/15 text-xl">
+            {selectedVisual.icon}
+          </div>
 
-        <h1 className="mt-2 text-3xl font-black tracking-tight text-white">
-          Journey Atlas
-        </h1>
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-200/65">
+              {selectedSection?.title ?? "Physics Gym"}
+            </p>
 
-        <p className="mt-2 text-sm leading-6 text-slate-300/70">
-          Navigate the physics landscape by section.
-        </p>
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-white">
+              {selectedSection?.worldName ?? "Journey Atlas"}
+            </h1>
+
+            <p className="mt-2 text-sm leading-6 text-slate-300/70">
+              {selectedSection?.description ?? "Navigate the physics landscape."}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <div className="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-[0.16em] text-cyan-100/45">
+            <span>Progress</span>
+            <span>{selectedProgress}%</span>
+          </div>
+
+          <div className="h-2 overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-cyan-300 shadow-lg shadow-cyan-300/20 transition-all"
+              style={{ width: `${selectedProgress}%` }}
+            />
+          </div>
+
+          <p className="mt-2 text-xs text-cyan-100/45">
+            {selectedCompletedCount}/{selectedTotalCount} modules complete
+          </p>
+        </div>
       </div>
 
       <div className="space-y-2">

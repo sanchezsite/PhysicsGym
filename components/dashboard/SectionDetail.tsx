@@ -46,73 +46,10 @@ export function SectionDetail({
 
   const rankProgress = getRankProgress(xp);
 
-  const sectionModules = section.units.flatMap((unit) => unit.modules);
-
-  const completedCount = sectionModules.filter((module) =>
-    completedModuleIds.includes(module.id)
-  ).length;
-
-  const totalModules = sectionModules.length;
-
-  const sectionProgress =
-    totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0;
 
   return (
-    <main className="flex-1 overflow-y-auto p-8">
-      <div className="flex flex-col gap-6">
-        <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-7 shadow-2xl shadow-black/25 backdrop-blur-md">
-          <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-start">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-200/65">
-                {section.title}
-              </p>
-
-              <h2 className="mt-3 text-5xl font-black tracking-tight text-white md:text-6xl">
-                {section.worldName}
-              </h2>
-
-              <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300/75">
-                {section.description}
-              </p>
-
-              <div className="mt-6 max-w-xl">
-                <div className="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-[0.16em] text-cyan-100/50">
-                  <span>Section progress</span>
-                  <span>{sectionProgress}%</span>
-                </div>
-
-                <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-cyan-300 shadow-lg shadow-cyan-300/20"
-                    style={{ width: `${sectionProgress}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="w-full rounded-3xl border border-cyan-200/15 bg-slate-950/35 p-5 shadow-xl shadow-black/20 lg:w-80">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-100/50">
-                Next lesson
-              </p>
-
-              <p className="mt-3 text-2xl font-black text-white">
-                Continue your route
-              </p>
-
-              <p className="mt-2 text-sm leading-6 text-slate-300/65">
-                Jump into the next unlocked lesson and keep building momentum.
-              </p>
-
-              <button
-                onClick={startLesson}
-                className="mt-5 w-full rounded-2xl bg-yellow-300 px-6 py-4 font-black text-slate-950 shadow-xl shadow-yellow-950/25"
-              >
-                Continue →
-              </button>
-            </div>
-          </div>
-        </div>
-
+    <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-6">
+       <div className="flex min-h-0 flex-1 flex-col gap-5">
         <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-4 backdrop-blur-sm">
           <div className="mb-3 flex items-center justify-between px-1">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-100/50">
@@ -187,7 +124,7 @@ export function SectionDetail({
         </section>
 
         {selectedUnit ? (
-          <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-sm">
+         <section className="min-h-0 flex-1 overflow-y-auto rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-sm">
             <div className="mb-6">
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-cyan-100/50">
                 Selected Unit
