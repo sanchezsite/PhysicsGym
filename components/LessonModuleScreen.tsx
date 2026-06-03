@@ -243,6 +243,7 @@ export function LessonModuleScreen({
   const [showExplanation, setShowExplanation] = useState(false);
   const [wasCorrect, setWasCorrect] = useState<boolean | null>(null);
   const [xpEarned, setXpEarned] = useState(0);
+  const [moduleComplete, setModuleComplete] = useState(false);
 
   const problem = module.problems[currentIndex];
 
@@ -279,7 +280,7 @@ export function LessonModuleScreen({
       setWasCorrect(null);
       setXpEarned(0);
     } else {
-      void onComplete();
+      setModuleComplete(true);
     }
   }
 
@@ -294,6 +295,49 @@ export function LessonModuleScreen({
             ? selectedVisualChoiceId !== null
             : true;
 
+if (moduleComplete) {
+  return (
+    <div className="mx-auto flex w-full max-w-4xl flex-1 px-6 py-10 text-white">
+      <div className="flex w-full flex-col justify-center">
+        <div className="rounded-[2rem] border border-cyan-300/25 bg-cyan-300/10 p-8 text-center shadow-2xl shadow-cyan-950/25 backdrop-blur-md">
+          <p className="text-sm font-bold uppercase tracking-[0.22em] text-cyan-100/70">
+            Module Complete
+          </p>
+
+          <h1 className="mt-4 text-5xl font-black tracking-tight text-white">
+            {module.title}
+          </h1>
+
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-slate-300/75">
+            Nice work. You completed every problem in this module and strengthened this part of your physics toolkit.
+          </p>
+
+          <div className="mx-auto mt-8 inline-flex items-center gap-2 rounded-2xl border border-yellow-200/25 bg-yellow-300/10 px-5 py-3 text-lg font-black text-yellow-100 shadow-xl shadow-yellow-950/20">
+            <span>✦</span>
+            <span>+50 XP</span>
+          </div>
+
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <button
+              onClick={() => void onComplete()}
+              className="rounded-2xl bg-yellow-300 px-6 py-4 font-black text-slate-950 shadow-xl shadow-yellow-950/25 transition hover:scale-[1.02]"
+            >
+              Continue →
+            </button>
+
+            <button
+              onClick={onExit}
+              className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-4 font-bold text-slate-200 transition hover:border-cyan-200/30 hover:bg-white/[0.08]"
+            >
+              Back to dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+  
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 px-6 py-10 text-white">
       <div className="w-full space-y-8">
@@ -379,16 +423,27 @@ export function LessonModuleScreen({
             </div>
           )}
 
-          <div className="mt-8 flex gap-4">
+         <div className="mt-8 flex gap-4">
             {!showExplanation ? (
               <Button onClick={submitAnswer} disabled={!canSubmit}>
                 Submit
               </Button>
-            ) : (
+            ) : wasCorrect ? (
               <Button onClick={nextProblem}>
                 {currentIndex === module.problems.length - 1
                   ? "Finish Module"
                   : "Next Problem"}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowExplanation(false);
+                  setWasCorrect(null);
+                  setXpEarned(0);
+                }}
+              >
+                Try Again
               </Button>
             )}
           </div>
