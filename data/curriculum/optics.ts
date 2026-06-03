@@ -11,5 +11,5 @@ export const optics: CurriculumSection = {
     glow: "fuchsia",
     atmosphere: "crystal",
   },
-  modules: [],
+  units: [],
 };

@@ -2,7 +2,9 @@ import type { LessonModule } from "@/types";
 import { curriculum } from "./index";
 
 export function getAllModules(): LessonModule[] {
-  return curriculum.flatMap((section) => section.modules);
+  return curriculum.flatMap((section) =>
+    section.units.flatMap((unit) => unit.modules)
+  );
 }
 
 export function getModuleById(moduleId: string | null): LessonModule {

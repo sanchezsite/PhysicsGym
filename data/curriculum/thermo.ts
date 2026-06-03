@@ -11,5 +11,5 @@ export const thermo: CurriculumSection = {
     glow: "orange",
     atmosphere: "thermal",
   },
-  modules: [],
+  units: [],
 };

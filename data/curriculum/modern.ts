@@ -11,5 +11,5 @@ export const modern: CurriculumSection = {
     glow: "violet",
     atmosphere: "quantum",
   },
-  modules: [],
+  units: [],
 };

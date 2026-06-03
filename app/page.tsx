@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { problems } from "@/data/problems";
-import { curriculumSections, curriculumUnits, learningPathSequences } from "@/data/curriculum";
+import { curriculumSections, curriculumUnits, learningPathSequences } from "@/data/curriculumLegacy";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Metric } from "@/components/Metric";

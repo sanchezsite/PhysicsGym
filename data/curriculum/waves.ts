@@ -11,5 +11,5 @@ export const waves: CurriculumSection = {
     glow: "sky",
     atmosphere: "echo",
   },
-  modules: [],
+  units: [],
 };

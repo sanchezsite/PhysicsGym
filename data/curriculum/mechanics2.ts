@@ -11,5 +11,5 @@ export const mechanics2: CurriculumSection = {
     glow: "amber",
     atmosphere: "highlands",
   },
-  modules: [],
+  units: [],
 };

@@ -47,10 +47,13 @@ export function SectionSidebar({
       <div className="space-y-2">
         {sections.map((section) => {
           const active = selectedSectionId === section.id;
-          const completedCount = section.modules.filter((module) =>
+          const sectionModules = section.units.flatMap((unit) => unit.modules);
+
+          const completedCount = sectionModules.filter((module) =>
             completedModuleIds.includes(module.id)
           ).length;
-          const totalCount = section.modules.length;
+
+          const totalCount = sectionModules.length;
           const progress =
             totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
           const visual = getSectionVisual(section.id);

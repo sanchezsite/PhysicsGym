@@ -1,5 +1,12 @@
 import type { LessonModule } from "@/types";
 
+export type CurriculumUnit = {
+  id: string;
+  title: string;
+  description: string;
+  modules: LessonModule[];
+};
+
 export type CurriculumSection = {
   id: string;
   title: string;
@@ -10,13 +17,5 @@ export type CurriculumSection = {
     glow: string;
     atmosphere: string;
   };
-  modules: LessonModule[];
-};
-
-export type UserProgress = {
-  completedModuleIds: string[];
-  completedProblemIds: number[];
-  xp: number;
-  rank: number;
-  streak: number;
+  units: CurriculumUnit[];
 };

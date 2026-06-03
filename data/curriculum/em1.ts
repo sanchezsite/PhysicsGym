@@ -11,5 +11,5 @@ export const em1: CurriculumSection = {
     glow: "cyan",
     atmosphere: "charged",
   },
-  modules: [],
+  units: [],
 };

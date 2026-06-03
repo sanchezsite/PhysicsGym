@@ -11,5 +11,5 @@ export const em2: CurriculumSection = {
     glow: "blue",
     atmosphere: "storm",
   },
-  modules: [],
+  units: [],
 };
