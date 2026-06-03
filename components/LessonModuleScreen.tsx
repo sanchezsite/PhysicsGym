@@ -227,7 +227,14 @@ export function LessonModuleScreen({
   onProblemComplete: (problemId: string) => void;
   onComplete: () => void | Promise<void>;
 }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const firstIncompleteIndex = module.problems.findIndex(
+  (problem) => !completedLessonProblemIds.includes(problem.id)
+  );
+
+  const initialProblemIndex =
+    firstIncompleteIndex === -1 ? module.problems.length - 1 : firstIncompleteIndex;
+
+  const [currentIndex, setCurrentIndex] = useState(initialProblemIndex);
   const [selected, setSelected] = useState<string | null>(null);
   const [pairAnswers, setPairAnswers] = useState<string[]>(["", ""]);
   const [sortAnswers, setSortAnswers] = useState<SortAnswers>({});
